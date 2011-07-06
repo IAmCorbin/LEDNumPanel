@@ -41,8 +41,8 @@ public class LEDNumDisplay_Demo {
         SwingUtilities.isEventDispatchThread());
         JFrame f = new JFrame("testLEDNumDisplay");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
-        f.add(new LEDNumDisplay());
-        f.setSize(250,250);
+        f.add(new LEDNumDisplay(10, 20, 120, 4));
+        f.setSize(400,300);
         f.setVisible(true);
     } 
 
@@ -53,17 +53,31 @@ class LEDNumDisplay extends JPanel {
 	//debug, counting number of times paintComponent is called
 	private int count = 0;
 	private String msg;
-    LEDNum led_num = new LEDNum(20,60,8);
-
-    public LEDNumDisplay() {
+	//the number of digits in the display
+	private int digits;
+    LEDNum[] led_nums;
+    /**
+     * Constructor
+     * @param d set number of digits in the display
+     * @param x set upper left x-coordinate of display 
+     * @param y set upper left y-coordinate of display
+     * @param s size of display
+     */
+    public LEDNumDisplay(int d, int x, int y, int s) {
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        final LEDNumDisplay self = this;
+        this.digits = d;
 
+        //create digits
+        led_nums = new LEDNum[10];
+        for(int n=0; n<this.digits; n++) {
+        	led_nums[n] = new LEDNum(x+((9*s)*n),y,s);
+        }
+        
 	    addMouseListener(new MouseAdapter(){
 	        public void mousePressed(MouseEvent e){
-	        	led_num.setNum(led_num.getNum()+1);
-	            int[] loc = led_num.getLoc();
-	            self.repaint(loc[0],loc[1],loc[2],loc[3]);
+	        	led_nums[0].setNum(led_nums[0].getNum()+1);
+	            int[] loc = led_nums[0].getLoc();
+	            repaint(loc[0],loc[1],loc[2],loc[3]);
 	        }
 	    });
     }
@@ -81,7 +95,10 @@ class LEDNumDisplay extends JPanel {
         msg = "paintComponent() called "+(++count)+" times";
         g.drawString(msg,10,40);
 
-        led_num.paintNum(g);
+        for(int n=0; n<this.digits; n++) {
+        	led_nums[n].paintNum(g);
+        }
+        
     }  
 }
 
