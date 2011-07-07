@@ -1,11 +1,11 @@
 /**
- * LEDNumDisplay_Demo
+ * LEDNumPanel_Demo
  * @date 7-6-2011
  * @author Corbin Tarrant
  * @site iamcorbin.net
  * @email Corbin@IAmCorbin.net
  *
- * This is a simple component that will simulate an analog 8-segment LED number display
+ * This is a simple component that will simulate an analog 8-segment LED number panel
  * 
  * Currently it displays a single number and will loop through 0-9 on mouse clicks
  */
@@ -25,7 +25,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseMotionAdapter;
 
-public class LEDNumDisplay_Demo {
+public class LEDNumPanel_Demo {
     
     public static void main(String[] args) {
 
@@ -39,21 +39,21 @@ public class LEDNumDisplay_Demo {
     private static void createAndShowGUI() {
         System.out.println("Created GUI on EDT? "+
         SwingUtilities.isEventDispatchThread());
-        JFrame f = new JFrame("testLEDNumDisplay");
+        JFrame f = new JFrame("testLEDNumPanel");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
-        f.add(new LEDNumDisplay(10, 20, 120, 3));
+        f.add(new LEDNumPanel(10, 20, 120, 3));
         f.setSize(400,300);
         f.setVisible(true);
     } 
 
 }
 
-class LEDNumDisplay extends JPanel {
+class LEDNumPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	//debug, counting number of times paintComponent is called
 	private int count = 0;
 	private String msg;
-	//the number of digits in the display
+	//the number of digits in the panel
 	private final int digits;
 	//size reference
 	private final int size;
@@ -66,12 +66,12 @@ class LEDNumDisplay extends JPanel {
     LEDNum[] led_nums;
     /**
      * Constructor
-     * @param d set number of digits in the display
-     * @param x set upper left x-coordinate of display 
-     * @param y set upper left y-coordinate of display
-     * @param s size of display
+     * @param d set number of digits in the panel
+     * @param x set upper left x-coordinate of panel 
+     * @param y set upper left y-coordinate of panel
+     * @param s size of panel
      */
-    public LEDNumDisplay(int d, int x, int y, int s) {
+    public LEDNumPanel(int d, int x, int y, int s) {
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
         this.digits = d;
         this.xPos = x;
@@ -91,13 +91,13 @@ class LEDNumDisplay extends JPanel {
             //create digit
         	led_nums[n] = new LEDNum(x+((9*s)*n),y,s,c);
         }
-        //setup initial display number
+        //setup initial panel number
         led_nums[digits-1].add(count);
         
         addMouseListener(new MouseAdapter(){
 	        public void mousePressed(MouseEvent e){
-	           led_nums[digits-1].add(225);
-	           count += 225;
+	           led_nums[digits-1].add(1);
+	           count += 1;
 		       //led_nums[n].setNum(led_nums[n].getNum()+1);
 		       //repaint the digit
 		       repaint(xPos,yPos,(size*9)*digits,size*16);
@@ -131,7 +131,7 @@ class LEDNumDisplay extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);       
         // Draw Text
-        msg = "LEDNumDisplay";
+        msg = "LEDNumPanel";
         g.drawString(msg,10,20);
 
         for(int n=0; n<this.digits; n++) {
@@ -142,9 +142,9 @@ class LEDNumDisplay extends JPanel {
 }
 
 class LEDNum{
-	//upper left coordinate of number display
+	//upper left coordinate of number panel
     private int xPos;
-    //upper right coordinate of number display
+    //upper right coordinate of number panel
     private int yPos;
     //width of bars
     private int width;
