@@ -41,8 +41,8 @@ public class LEDNumPanel_Demo {
         SwingUtilities.isEventDispatchThread());
         JFrame f = new JFrame("testLEDNumPanel");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
-        f.add(new LEDNumPanel(10, 20, 120, 3));
-        f.setSize(400,300);
+        f.add(new LEDNumPanel(10, 20, 120, 8));
+        f.setSize(800,300);
         f.setVisible(true);
     } 
 
@@ -51,7 +51,7 @@ public class LEDNumPanel_Demo {
 class LEDNumPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	//debug, counting number of times paintComponent is called
-	private int count = 0;
+	private int count = 10000;
 	private String msg;
 	//the number of digits in the panel
 	private final int digits;
@@ -82,46 +82,64 @@ class LEDNumPanel extends JPanel {
         //create digits
         led_nums = new LEDNum[10];
         for(int n=0; n<this.digits; n++) {
-        	//setup digit carrying
-        	LEDNum c;
-        	if(n>0)
-        		c = led_nums[n-1];
-        	else
-        		c = null;
             //create digit
-        	led_nums[n] = new LEDNum(x+((9*s)*n),y,s,c);
+        	led_nums[n] = new LEDNum(x+((9*s)*n),y,s);
         }
         //setup initial panel number
-        led_nums[digits-1].add(count);
+        addToPanel(count);
         
         addMouseListener(new MouseAdapter(){
 	        public void mousePressed(MouseEvent e){
-	           led_nums[digits-1].add(1);
-	           count += 1;
-		       //led_nums[n].setNum(led_nums[n].getNum()+1);
-		       //repaint the digit
+	           addToPanel(1);
+		       //repaint the digits
 		       repaint(xPos,yPos,(size*9)*digits,size*16);
 	        }
 	    });
-        /*
-        //Listener that cycles each digit onClick
-	    addMouseListener(new MouseAdapter(){
-	        public void mousePressed(MouseEvent e){
-	        	int mouseX = e.getX();
-	        	int mouseY = e.getY();
-	        	//check location of mouse and only change cooresponding digit
-	        	for(int n=0; n<digits; n++) {
-	        		int[] loc = led_nums[n].getLoc();
-	        		if( (mouseX >= loc[0]) && (mouseX <= loc[0]+loc[2])
-	        		 && (mouseY >= loc[1]) && (mouseY <= loc[1]+loc[3])) {
-		        		led_nums[n].setNum(led_nums[n].getNum()+1);
-		        		//repaint the digit
-		            	repaint(loc[0],loc[1],loc[2],loc[3]);
-	        		}
-	        	}
-	        }
-	    });
-	    */
+    }
+    
+    /**
+     * Add a number to the panel as a whole
+     * @param n the number to add
+     */
+    public void addToPanel(int n) {
+    	count += n;
+    	// reference to initial value before any addition is performed
+    	int o;
+    	// variable to hold the amount to be carried - initially the entire amount to add
+    	int c = n;
+    	// digit position in addition operation
+    	int pos = 0;
+    	while(c != 0) {
+    		//add value
+    		this.led_nums[this.digits-pos-1].add(c);
+    		//check if value has exceeded digit capacity
+    		if(this.led_nums[this.digits-pos-1].getNum() > 9) {
+    			//store original value
+    			o = this.led_nums[this.digits-pos-1].getNum();
+    			//make sure we have another digit in the display to carry to
+    			if(this.led_nums.length>pos+1) {
+        			//add to this digit
+        			System.out.print("%10 ");
+        			System.out.println(o % 10);
+        			this.led_nums[this.digits-pos-1].setNum(o % 10);
+        			
+        			//carry remainder up
+        			c = (int)((o-this.led_nums[this.digits-pos-1].getNum())/10);
+        			System.out.print("Carrying ");
+        			System.out.println(c);
+        			pos++;
+        		} else {
+        			System.out.println("MAXNUM HIT!");
+        			//subtract value
+            		this.led_nums[this.digits-pos-1].add(-n);
+        		}
+    		
+    		} else {
+    			//addition complete, nothing to carry
+    			c = 0;
+    			System.out.println("Count = "+count);
+    		}		
+    	}
     }
 
     public Dimension getPreferredSize() {
@@ -160,16 +178,13 @@ class LEDNum{
 	private Color c_on = new Color(1.0f,0.0f,0.0f);
 	//number border color
 	private Color c_border = new Color(0.1f, 0.1f, 0.1f);
-	//Reference to digit for carrying (or null if can't carry)
-	private LEDNum carry;
 	
-    public LEDNum(int x, int y, int size, LEDNum c) {
+    public LEDNum(int x, int y, int size) {
     	width = size;
     	height = size*6;
     	padding = width;
     	xPos = x+padding;
     	yPos = y+padding;
-    	carry = c;
     }
     
     public void setX(int xPos){ 
@@ -209,27 +224,7 @@ class LEDNum{
      * @param n the number to add
      */
     public void add(int n) {
-    	int o,c;
-    	num+=n;
-    	o = num;
-    	if(num>9) {
-    		if(this.carry != null) {
-    			//add to this digit
-    			System.out.print("%10 ");
-    			System.out.println(num % 10);
-    			num = num % 10;
-    			
-    			//carry remainder up
-    			c = (int)(o-num)/10;
-    			this.carry.add(c);
-    			System.out.print("Carrying ");
-    			System.out.println(c);
-    		} else {
-    			System.out.println("MAXNUM HIT!");
-    			num-=n;
-    		}
-    	}
-    	System.out.println("Num = "+num+"");
+    	num += n;
     }
     
     public int getNum() {
