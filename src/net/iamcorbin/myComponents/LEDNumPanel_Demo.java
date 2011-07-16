@@ -7,7 +7,6 @@
  *
  * This is a simple component that will simulate an analog 8-segment LED number panel
  * 
- * Currently it displays a single number and will loop through 0-9 on mouse clicks
  */
 
 package net.iamcorbin.myComponents;
@@ -19,11 +18,8 @@ import javax.swing.BorderFactory;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics; 
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseEvent;
 
 public class LEDNumPanel_Demo {
     
@@ -61,8 +57,7 @@ class LEDNumPanel extends JPanel {
 	private final int xPos;
 	//y reference
 	private final int yPos;
-	//the maximum number that can be displayed with this many digits
-	private double maxnum;
+	//The LED Digits
     LEDNum[] led_nums;
     /**
      * Constructor
@@ -77,69 +72,28 @@ class LEDNumPanel extends JPanel {
         this.xPos = x;
         this.yPos = y;
         this.size = s;
-        //set max number
-        this.maxnum = Math.pow(10,d)-1;
+
         //create digits
-        led_nums = new LEDNum[10];
-        for(int n=0; n<this.digits; n++) {
+        led_nums = new LEDNum[this.digits];
+        LEDNum temp = null;
+        for(int n=this.digits-1; n>=0; n--) {
             //create digit
-        	led_nums[n] = new LEDNum(x+((9*s)*n),y,s);
+        	led_nums[n] = new LEDNum(x+((9*s)*(this.digits-1-n)),y,s, temp);
+        	//save reference to store this position in the next digit
+        	temp = led_nums[n];
         }
         //setup initial panel number
-        addToPanel(count);
+        //addToPanel(count);
+        this.led_nums[0].add(count);
         
         addMouseListener(new MouseAdapter(){
 	        public void mousePressed(MouseEvent e){
-	           addToPanel(1);
+	           //addToPanel(3);
+	           led_nums[0].add(-3);
 		       //repaint the digits
 		       repaint(xPos,yPos,(size*9)*digits,size*16);
 	        }
 	    });
-    }
-    
-    /**
-     * Add a number to the panel as a whole
-     * @param n the number to add
-     */
-    public void addToPanel(int n) {
-    	count += n;
-    	// reference to initial value before any addition is performed
-    	int o;
-    	// variable to hold the amount to be carried - initially the entire amount to add
-    	int c = n;
-    	// digit position in addition operation
-    	int pos = 0;
-    	while(c != 0) {
-    		//add value
-    		this.led_nums[this.digits-pos-1].add(c);
-    		//check if value has exceeded digit capacity
-    		if(this.led_nums[this.digits-pos-1].getNum() > 9) {
-    			//store original value
-    			o = this.led_nums[this.digits-pos-1].getNum();
-    			//make sure we have another digit in the display to carry to
-    			if(this.led_nums.length>pos+1) {
-        			//add to this digit
-        			System.out.print("%10 ");
-        			System.out.println(o % 10);
-        			this.led_nums[this.digits-pos-1].setNum(o % 10);
-        			
-        			//carry remainder up
-        			c = (int)((o-this.led_nums[this.digits-pos-1].getNum())/10);
-        			System.out.print("Carrying ");
-        			System.out.println(c);
-        			pos++;
-        		} else {
-        			System.out.println("MAXNUM HIT!");
-        			//subtract value
-            		this.led_nums[this.digits-pos-1].add(-n);
-        		}
-    		
-    		} else {
-    			//addition complete, nothing to carry
-    			c = 0;
-    			System.out.println("Count = "+count);
-    		}		
-    	}
     }
 
     public Dimension getPreferredSize() {
@@ -152,7 +106,7 @@ class LEDNumPanel extends JPanel {
         msg = "LEDNumPanel";
         g.drawString(msg,10,20);
 
-        for(int n=0; n<this.digits; n++) {
+        for(int n=this.digits-1; n>=0; n--) {
         	//paint digit
         	led_nums[n].paintNum(g);
         }
@@ -172,6 +126,8 @@ class LEDNum{
 	private int num = 0;
 	//padding around the numbers
 	private int padding;
+	//reference to the next highest digit
+	private LEDNum next = null;
 	//off color for a segment
 	private Color c_off = new Color(0.2f,0.0f,0.0f);
 	//on color for a segment
@@ -179,12 +135,13 @@ class LEDNum{
 	//number border color
 	private Color c_border = new Color(0.1f, 0.1f, 0.1f);
 	
-    public LEDNum(int x, int y, int size) {
+    public LEDNum(int x, int y, int size, LEDNum n) {
     	width = size;
     	height = size*6;
     	padding = width;
     	xPos = x+padding;
     	yPos = y+padding;
+    	next = n;
     }
     
     public void setX(int xPos){ 
@@ -212,12 +169,9 @@ class LEDNum{
     }
     
     public void setNum(int n) {
-    	if(n < 10 && n > -1)
-    		num = n;
-    	else {
-    		System.out.println("LEDNum.setNum - Attempted to set a number above 9, defaulting to 0");
-    		num = 0;
-    	}
+    	num = n;
+    	if(n > 10 || n > -1)
+    		System.out.println("WARNING - Number of a single digit was set above 9 or below 0");
     }
     /**
      * Add to a digit
@@ -225,6 +179,42 @@ class LEDNum{
      */
     public void add(int n) {
     	num += n;
+    	if(num>9) {
+    		//need to carry
+	    	while(num>9) {
+	    		if(next != null) {
+	    			next.add(1);
+	    			num -= 10;
+	    		} else {
+	    			System.out.println("MAXIMUM NUMBER DISPLAY CAN SHOW HAS BEEN REACHED");
+	    			return;
+	    		}
+	    	}
+    	} else if(num<0) {
+    		//need to borrow
+    		while(num<0) {
+    			borrow();
+    		}
+    	}
+    }
+    
+    /**recursive borrow function for subtraction
+     * 
+     */
+    private void borrow() {
+    	if(next != null) {
+    		if(next.getNum()>0) {
+    			next.add(-1);
+    			this.add(10);
+    		} else {
+    			next.borrow();
+    			next.add(-1);
+    			this.add(10);
+    		}
+    	} else {
+    		System.out.println("ERROR, NOTHING TO BORROW, NEGATIVE NUMBERS NOT SUPPORTED");
+    		return;
+    	}
     }
     
     public int getNum() {
