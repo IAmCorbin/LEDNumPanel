@@ -5,7 +5,7 @@
  * @site iamcorbin.net
  * @email Corbin@IAmCorbin.net
  *
- * This is a simple component that will simulate an analog 8-segment LED number panel
+ * This is a simple component that will simulate an 8-segment LED number panel
  * 
  */
 
@@ -21,8 +21,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics; 
-import java.awt.GridLayout;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -30,7 +28,7 @@ public class LEDNumPanel_Demo {
 	
 	//the scale size for the panel
 	static final int SIZE = 8;
-	static final int DIGITS = 10;
+	static final int DIGITS = 5;
 	
     public static void main(String[] args) {
 
@@ -48,7 +46,7 @@ public class LEDNumPanel_Demo {
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
         f.getContentPane().setLayout(new BoxLayout(f.getContentPane(),BoxLayout.Y_AXIS));
         f.add(new LEDButtonPanel());
-        f.setSize(800,300);
+        f.setSize(400,300);
         f.setVisible(true);
     } 
 
@@ -57,7 +55,7 @@ public class LEDNumPanel_Demo {
 class LEDNumPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	//debug, counting number of times paintComponent is called
-	private int count = 10000;
+	private long count = 00000;
 	private String msg;
 	//the number of digits in the panel
 	private final int digits;
@@ -99,18 +97,15 @@ class LEDNumPanel extends JPanel {
         //setup initial panel number
         //addToPanel(count);
         this.led_nums[0].add(count);
-        
-        addMouseListener(new MouseAdapter(){
-	        public void mousePressed(MouseEvent e){
-	           //addToPanel(3);
-	           led_nums[0].add(-3);
-		       
-	        }
-	    });
     }
     //access the LEDNum internal add function
-    public void add(int n) {
+    public void add(long n) {
     	this.led_nums[0].add(n);
+    }
+    
+    //get the current value
+    public long getCount() {
+    	return this.count;
     }
     
     public Dimension getPreferredSize() {
@@ -127,10 +122,19 @@ class LEDNumPanel extends JPanel {
         	//paint digit
         	led_nums[n].paintNum(g);
         }
-    }  
+    }
+    
+    public void repaint() {
+    	SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+              //repaint the digits
+          	  repaint(xPos,yPos,(size*9)*digits,size*16);
+            }
+        });
+    }
 }
 
-class LEDNum{
+class LEDNum {
 	//upper left coordinate of number panel
     private int xPos;
     //upper right coordinate of number panel
@@ -140,7 +144,7 @@ class LEDNum{
     //height of bars
     private int height;
     //the number currently displayed
-	private int num = 0;
+	private long num = 0;
 	//padding around the numbers
 	private int padding;
 	//reference to the next highest digit
@@ -185,56 +189,62 @@ class LEDNum{
         return height;
     }
     
-    public void setNum(int n) {
+    public void setNum(long n) {
     	num = n;
-    	if(n > 10 || n > -1)
+    	if(n > 9 || n < 0)
     		System.out.println("WARNING - Number of a single digit was set above 9 or below 0");
     }
     /**
      * Add to a digit
      * @param n the number to add
+     * return false on error
      */
-    public void add(int n) {
+    public void add(long n) {
     	num += n;
     	if(num>9) {
     		//need to carry
 	    	while(num>9) {
 	    		if(next != null) {
-	    			next.add(1);
-	    			num -= 10;
+    				next.add(1);
+    				num -= 10;
 	    		} else {
-	    			System.out.println("MAXIMUM NUMBER DISPLAY CAN SHOW HAS BEEN REACHED");
+	    			System.out.println("MAX HIT");
+	    			this.add(-n);
 	    			return;
 	    		}
 	    	}
     	} else if(num<0) {
     		//need to borrow
     		while(num<0) {
-    			borrow();
+    			if(!borrow()) {
+    				System.out.println("MIN HIT");
+    				this.add(-n);
+    			}
     		}
     	}
     }
     
     /**recursive borrow function for subtraction
-     * 
+     * return true or false on error
      */
-    private void borrow() {
-    	if(next != null) {
-    		if(next.getNum()>0) {
-    			next.add(-1);
-    			this.add(10);
-    		} else {
-    			next.borrow();
-    			next.add(-1);
-    			this.add(10);
-    		}
-    	} else {
-    		System.out.println("ERROR, NOTHING TO BORROW, NEGATIVE NUMBERS NOT SUPPORTED");
-    		return;
-    	}
+	private boolean borrow()
+	{
+		//use head recursion, rather than tail recursion
+		//- want to validate borrow() to the deepest point before changing values
+		//- want to borrow from left to right, not right to left
+		if( next == null || next.getNum() == 0 && next.borrow() == false )
+    		return false;
+
+		//decrement next number through api
+    		next.setNum( next.getNum() - 1 );
+		//manually increase this number by 10 through private data member access
+		//- avoid recursion between add() & borrow()
+		//- to bypass warning in setNum()
+	    	this.num += 10;
+    		return true;
     }
     
-    public int getNum() {
+    public long getNum() {
     	return num;
     }
     
@@ -316,8 +326,13 @@ class LEDNum{
 
 class LEDButtonPanel extends JPanel implements MouseListener {
 	
+	private static final long serialVersionUID = 1L;
+	//Panels to hold three rows
 	JPanel top,middle,bottom;
+	//top and bottom button rows
 	JButton[] b_inc, b_dec;
+	//The Number Panel
+	LEDNumPanel LED;
 	
 	public LEDButtonPanel() {
 		//setup main panels
@@ -327,9 +342,9 @@ class LEDButtonPanel extends JPanel implements MouseListener {
         bottom = new JPanel();
         bottom.setLayout(new FlowLayout(FlowLayout.CENTER, 5*LEDNumPanel_Demo.SIZE, LEDNumPanel_Demo.SIZE));
         //Increase Value Buttons
-        b_inc = new JButton[10];
-        b_dec = new JButton[10];
-        for(int n=9; n>=0; n--) {
+        b_inc = new JButton[LEDNumPanel_Demo.DIGITS];
+        b_dec = new JButton[LEDNumPanel_Demo.DIGITS];
+        for(int n=LEDNumPanel_Demo.DIGITS-1; n>=0; n--) {
         	//create buttons
         	b_inc[n] = new JButton();
         	b_dec[n] = new JButton();
@@ -337,8 +352,8 @@ class LEDButtonPanel extends JPanel implements MouseListener {
         	b_inc[n].setPreferredSize(new Dimension(4*LEDNumPanel_Demo.SIZE,LEDNumPanel_Demo.SIZE*4));
         	b_dec[n].setPreferredSize(new Dimension(4*LEDNumPanel_Demo.SIZE,LEDNumPanel_Demo.SIZE*4));
         	//name buttons
-        	b_inc[n].setName("+"+(int)Math.pow(10, n));
-        	b_dec[n].setName("-"+(int)Math.pow(10, n));
+        	b_inc[n].setName("+"+(long)Math.pow(10, n));
+        	b_dec[n].setName("-"+(long)Math.pow(10, n));
         	//add event handling
         	b_inc[n].addMouseListener(this);
         	b_dec[n].addMouseListener(this);
@@ -347,7 +362,8 @@ class LEDButtonPanel extends JPanel implements MouseListener {
         	bottom.add(b_dec[n]);
         }
         //LED Panel
-        middle.add(new LEDNumPanel(LEDNumPanel_Demo.DIGITS, 0, 0, LEDNumPanel_Demo.SIZE));
+        LED = new LEDNumPanel(LEDNumPanel_Demo.DIGITS, 0, 0, LEDNumPanel_Demo.SIZE);
+        middle.add(LED);
         
         //add panels
         add(top);
@@ -359,13 +375,12 @@ class LEDButtonPanel extends JPanel implements MouseListener {
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
 		String action = arg0.getComponent().getName();
-		
-		if(action.startsWith("+"))
-			System.out.println("Need to Add "+action.substring(1));
+    	if(action.startsWith("+"))
+			LED.add(Long.parseLong(action.substring(1)));
 		if(action.startsWith("-"))
-			System.out.println("Need to Subtract "+action.substring(1));
-		//repaint the digits
-	    //repaint(xPos,yPos,(size*9)*digits,size*16);
+			LED.add(-Long.parseLong((action.substring(1))));
+		LED.repaint();
+		
 	}
 
 	@Override
