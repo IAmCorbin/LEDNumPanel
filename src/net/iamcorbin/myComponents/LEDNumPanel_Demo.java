@@ -11,18 +11,27 @@
 
 package net.iamcorbin.myComponents;
 
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.BorderFactory;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics; 
+import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 public class LEDNumPanel_Demo {
-    
+	
+	//the scale size for the panel
+	static final int SIZE = 8;
+	static final int DIGITS = 10;
+	
     public static void main(String[] args) {
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -33,11 +42,12 @@ public class LEDNumPanel_Demo {
     }
 
     private static void createAndShowGUI() {
-        System.out.println("Created GUI on EDT? "+
+    	System.out.println("Created GUI on EDT? "+
         SwingUtilities.isEventDispatchThread());
         JFrame f = new JFrame("testLEDNumPanel");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
-        f.add(new LEDNumPanel(10, 20, 120, 8));
+        f.getContentPane().setLayout(new BoxLayout(f.getContentPane(),BoxLayout.Y_AXIS));
+        f.add(new LEDButtonPanel());
         f.setSize(800,300);
         f.setVisible(true);
     } 
@@ -58,7 +68,8 @@ class LEDNumPanel extends JPanel {
 	//y reference
 	private final int yPos;
 	//The LED Digits
-    LEDNum[] led_nums;
+    private LEDNum[] led_nums;
+   
     /**
      * Constructor
      * @param d set number of digits in the panel
@@ -72,7 +83,10 @@ class LEDNumPanel extends JPanel {
         this.xPos = x;
         this.yPos = y;
         this.size = s;
-
+        //repaint the digits (saved here for reference)
+        //repaint(xPos,yPos,(size*9)*digits,size*16);
+        
+        
         //create digits
         led_nums = new LEDNum[this.digits];
         LEDNum temp = null;
@@ -90,14 +104,17 @@ class LEDNumPanel extends JPanel {
 	        public void mousePressed(MouseEvent e){
 	           //addToPanel(3);
 	           led_nums[0].add(-3);
-		       //repaint the digits
-		       repaint(xPos,yPos,(size*9)*digits,size*16);
+		       
 	        }
 	    });
     }
-
+    //access the LEDNum internal add function
+    public void add(int n) {
+    	this.led_nums[0].add(n);
+    }
+    
     public Dimension getPreferredSize() {
-        return new Dimension(250,200);
+        return new Dimension(this.xPos+((9*this.size)*(this.digits)),this.size*17);
     }
     
     public void paintComponent(Graphics g) {
@@ -295,4 +312,83 @@ class LEDNum{
         g.setColor(c_border);
         g.draw3DRect(xPos+(6*width),yPos+(8*width),width,height,true);
     }
+}
+
+class LEDButtonPanel extends JPanel implements MouseListener {
+	
+	JPanel top,middle,bottom;
+	JButton[] b_inc, b_dec;
+	
+	public LEDButtonPanel() {
+		//setup main panels
+        top = new JPanel();
+        top.setLayout(new FlowLayout(FlowLayout.CENTER, 5*LEDNumPanel_Demo.SIZE, LEDNumPanel_Demo.SIZE));
+        middle = new JPanel();
+        bottom = new JPanel();
+        bottom.setLayout(new FlowLayout(FlowLayout.CENTER, 5*LEDNumPanel_Demo.SIZE, LEDNumPanel_Demo.SIZE));
+        //Increase Value Buttons
+        b_inc = new JButton[10];
+        b_dec = new JButton[10];
+        for(int n=9; n>=0; n--) {
+        	//create buttons
+        	b_inc[n] = new JButton();
+        	b_dec[n] = new JButton();
+        	//set button sizes
+        	b_inc[n].setPreferredSize(new Dimension(4*LEDNumPanel_Demo.SIZE,LEDNumPanel_Demo.SIZE*4));
+        	b_dec[n].setPreferredSize(new Dimension(4*LEDNumPanel_Demo.SIZE,LEDNumPanel_Demo.SIZE*4));
+        	//name buttons
+        	b_inc[n].setName("+"+(int)Math.pow(10, n));
+        	b_dec[n].setName("-"+(int)Math.pow(10, n));
+        	//add event handling
+        	b_inc[n].addMouseListener(this);
+        	b_dec[n].addMouseListener(this);
+        	//add buttons to panels
+        	top.add(b_inc[n]);
+        	bottom.add(b_dec[n]);
+        }
+        //LED Panel
+        middle.add(new LEDNumPanel(LEDNumPanel_Demo.DIGITS, 0, 0, LEDNumPanel_Demo.SIZE));
+        
+        //add panels
+        add(top);
+        add(middle);
+        add(bottom);
+        
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent arg0) {
+		String action = arg0.getComponent().getName();
+		
+		if(action.startsWith("+"))
+			System.out.println("Need to Add "+action.substring(1));
+		if(action.startsWith("-"))
+			System.out.println("Need to Subtract "+action.substring(1));
+		//repaint the digits
+	    //repaint(xPos,yPos,(size*9)*digits,size*16);
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
 }
