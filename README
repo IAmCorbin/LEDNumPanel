@@ -1,0 +1,10 @@
+ LEDNumPanel
+ @version 1.0
+ @created 7-6-2011
+ @updated 7-19-2011
+ @author Corbin Tarrant
+ @site iamcorbin.net
+ @email Corbin@IAmCorbin.net
+
+This is a simple component that will simulate an 8-segment LED number panel
+

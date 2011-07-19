@@ -1,6 +1,6 @@
 /**
  * LEDNumPanel_Demo
- * @version 0.9
+ * @version 1.0
  * @created 7-6-2011
  * @updated 7-19-2011
  * @author Corbin Tarrant
