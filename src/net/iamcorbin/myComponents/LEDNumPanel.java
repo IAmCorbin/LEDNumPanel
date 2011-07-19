@@ -90,6 +90,9 @@ class LEDNumPanel extends JPanel implements MouseListener {
 
         
 	}
+	public void setColors(Color on, Color off) {
+		this.LED.setLEDColors(on, off);
+	}
 
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
@@ -190,6 +193,13 @@ class NumPanel extends JPanel {
         return new Dimension(this.xPos+((9*this.size)*(this.digits)),this.size*17);
     }
     
+    public void setLEDColors(Color on, Color off) {
+    	for(int n=0; n<this.digits; n++) {
+    		this.led_nums[n].setOnColor(on);
+    		this.led_nums[n].setOffColor(off);
+    	}
+    }
+    
     public void paintComponent(Graphics g) {
         super.paintComponent(g);       
         for(int n=this.digits-1; n>=0; n--) {
@@ -245,6 +255,16 @@ class LEDNum {
     	yPos = y+padding;
     	next = n;
     }
+    public LEDNum(int x, int y, int size, LEDNum n, Color on, Color off) {
+    	width = size;
+    	height = size*6;
+    	padding = width;
+    	xPos = x+padding;
+    	yPos = y+padding;
+    	next = n;
+    	c_on = on;
+    	c_off = off;
+    }
     
     public void setX(int xPos){ 
         this.xPos = xPos;
@@ -262,6 +282,12 @@ class LEDNum {
         return yPos;
     }
 
+    public void setOnColor(Color c) {
+    	c_on = c;
+    }
+    public void setOffColor(Color c) {
+    	c_off = c;
+    }
     public int getWidth(){
         return width;
     } 

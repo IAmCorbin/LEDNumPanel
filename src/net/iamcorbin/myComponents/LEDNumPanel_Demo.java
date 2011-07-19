@@ -1,5 +1,7 @@
 package net.iamcorbin.myComponents;
 
+import java.awt.Color;
+
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -24,7 +26,9 @@ public class LEDNumPanel_Demo {
         JFrame f = new JFrame("LEDNumPanel_Demo");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
         f.getContentPane().setLayout(new BoxLayout(f.getContentPane(),BoxLayout.Y_AXIS));
-        f.add(new LEDNumPanel(5,6,true));
+        LEDNumPanel LED = new LEDNumPanel(5,6,true);
+        LED.setColors(new Color(0.0f,1.0f,0.0f), new Color(0.0f,0.0f,0.3f));
+        f.add(LED);
         f.setSize(350,250);
         f.setVisible(true);
     } 
