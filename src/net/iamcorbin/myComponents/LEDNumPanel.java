@@ -174,7 +174,11 @@ class NumPanel extends JPanel {
     }
     //access the LEDNum internal add function
     public void add(long n) {
-    	this.led_nums[0].add(n);
+    	//max value check
+    	if(count+n < Math.pow(10,digits)) {
+    		this.led_nums[0].add(n);
+    		count += n;
+    	}
     }
     
     //get the current value
