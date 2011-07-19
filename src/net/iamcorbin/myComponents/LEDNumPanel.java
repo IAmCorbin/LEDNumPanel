@@ -42,12 +42,10 @@ class LEDNumPanel extends JPanel implements MouseListener {
 	/**
      * Constructor
      * @param d set number of digits in the panel
-     * @param x set upper left x-coordinate of panel 
-     * @param y set upper left y-coordinate of panel
      * @param s size of panel
      * @param buttons optional value manipulation buttons
      */
-	public LEDNumPanel(int d, int x, int y, int s, boolean buttons) {
+	public LEDNumPanel(int d, int s, boolean buttons) {
 		//setup main panels
 		middle = new JPanel(); 
 		 //Optionally Create Buttons
@@ -78,7 +76,7 @@ class LEDNumPanel extends JPanel implements MouseListener {
 	         }
 		 }
          //LED Panel
-         LED = new NumPanel(d, x, y, s);
+         LED = new NumPanel(d,s);
          middle.add(LED);
          
          //add panels
@@ -137,7 +135,6 @@ class NumPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	//debug, counting number of times paintComponent is called
 	private long count = 00000;
-	private String msg;
 	//the number of digits in the panel
 	private final int digits;
 	//size reference
@@ -152,15 +149,13 @@ class NumPanel extends JPanel {
     /**
      * Constructor
      * @param d set number of digits in the panel
-     * @param x set upper left x-coordinate of panel 
-     * @param y set upper left y-coordinate of panel
      * @param s size of panel
      */
-    public NumPanel(int d, int x, int y, int s) {
+    public NumPanel(int d, int s) {
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
         this.digits = d;
-        this.xPos = x;
-        this.yPos = y;
+        this.xPos = 0;
+        this.yPos = 0;
         this.size = s;
         //repaint the digits (saved here for reference)
         //repaint(xPos,yPos,(size*9)*digits,size*16);
@@ -171,7 +166,7 @@ class NumPanel extends JPanel {
         LEDNum temp = null;
         for(int n=this.digits-1; n>=0; n--) {
             //create digit
-        	led_nums[n] = new LEDNum(x+((9*s)*(this.digits-1-n)),y,s, temp);
+        	led_nums[n] = new LEDNum(this.xPos+((9*s)*(this.digits-1-n)),this.yPos,s, temp);
         	//save reference to store this position in the next digit
         	temp = led_nums[n];
         }

@@ -24,8 +24,8 @@ public class LEDNumPanel_Demo {
         JFrame f = new JFrame("LEDNumPanel_Demo");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
         f.getContentPane().setLayout(new BoxLayout(f.getContentPane(),BoxLayout.Y_AXIS));
-        f.add(new LEDNumPanel(5,0,0,8,true));
-        f.setSize(400,300);
+        f.add(new LEDNumPanel(5,6,true));
+        f.setSize(350,250);
         f.setVisible(true);
     } 
 
