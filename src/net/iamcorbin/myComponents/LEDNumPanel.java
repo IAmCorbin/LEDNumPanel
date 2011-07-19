@@ -13,6 +13,7 @@
 
 package net.iamcorbin.myComponents;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.JPanel;
@@ -47,6 +48,7 @@ class LEDNumPanel extends JPanel implements MouseListener {
      */
 	public LEDNumPanel(int d, int s, boolean buttons) {
 		//setup main panels
+		this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
 		middle = new JPanel(); 
 		 //Optionally Create Buttons
 		 if(buttons) {
@@ -134,7 +136,7 @@ class LEDNumPanel extends JPanel implements MouseListener {
 class NumPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	//debug, counting number of times paintComponent is called
-	private long count = 00000;
+	private long count = 0;
 	//the number of digits in the panel
 	private final int digits;
 	//size reference
@@ -156,10 +158,7 @@ class NumPanel extends JPanel {
         this.digits = d;
         this.xPos = 0;
         this.yPos = 0;
-        this.size = s;
-        //repaint the digits (saved here for reference)
-        //repaint(xPos,yPos,(size*9)*digits,size*16);
-        
+        this.size = s;        
         
         //create digits
         led_nums = new LEDNum[this.digits];
@@ -171,8 +170,7 @@ class NumPanel extends JPanel {
         	temp = led_nums[n];
         }
         //setup initial panel number
-        //addToPanel(count);
-        this.led_nums[0].add(count);
+        this.add(count);
     }
     //access the LEDNum internal add function
     public void add(long n) {
